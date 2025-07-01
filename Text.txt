@@ -1,0 +1,1941 @@
+Skip to main content
+Stack Overflow
+About
+Products
+OverflowAI
+Search…
+Home
+Questions
+Tags
+Challenges
+New
+Chat
+Articles
+Users
+Companies
+Collectives
+Communities for your favorite technologies. Explore all Collectives
+
+Teams
+
+Ask questions, find answers and collaborate at work with Stack Overflow for Teams.
+
+ 
+
+
+How can I generate random alphanumeric strings?
+Asked 15 years, 10 months ago
+Modified 4 months ago
+Viewed 1.2m times
+1338
+
+How can I generate a random 8 character alphanumeric string in C#?
+
+c#.netrandom
+Share
+Improve this question
+Follow
+edited Apr 22, 2019 at 22:44
+Andrew's user avatar
+Andrew
+20.3k1313 gold badges108108 silver badges122122 bronze badges
+asked Aug 27, 2009 at 23:07
+KingNestor's user avatar
+KingNestor
+68.3k5454 gold badges126126 silver badges152152 bronze badges
+2
+What restrictions if any do you have on the character set? Just English language characters and 0-9? Mixed case? – 
+Eric J.
+ CommentedAug 27, 2009 at 23:15
+8
+Or maybe to stackoverflow.com/questions/730268/… or stackoverflow.com/questions/1122483/c-random-string-generator – 
+Jonas Elfström
+ CommentedAug 27, 2009 at 23:15
+9
+Note that you should NOT use any method based on the Random class to generate passwords. The seeding of Random has very low entropy, so it's not really secure. Use a cryptographic PRNG for passwords. – 
+CodesInChaos
+ CommentedMar 9, 2011 at 18:47
+2
+Would be nice to include language localisation in this question. Especially if your gui needs to cater for Chinese or Bulgarian! – 
+Peter Jamsmenson
+ CommentedSep 25, 2015 at 23:48 
+22
+Something with this many upvotes and this many quality answers doesn't deserved to be marked as closed. I vote that it be reopened. – 
+John Coleman
+ CommentedOct 16, 2017 at 12:52
+Show 4 more comments
+39 Answers
+Sorted by:
+
+Highest score (default)
+1
+2
+Next
+2211
+
+I heard LINQ is the new black, so here's my attempt using LINQ:
+
+private static Random random = new Random();
+
+public static string RandomString(int length)
+{
+    const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    return new string(Enumerable.Repeat(chars, length)
+        .Select(s => s[random.Next(s.Length)]).ToArray());
+}
+(Note: The use of the Random class makes this unsuitable for anything security related, such as creating passwords or tokens. Use the RNGCryptoServiceProvider class if you need a strong random number generator.)
+
+Share
+Improve this answer
+Follow
+edited Nov 13, 2021 at 18:56
+Wai Ha Lee's user avatar
+Wai Ha Lee
+8,856101101 gold badges6161 silver badges9696 bronze badges
+answered Aug 27, 2009 at 23:13
+dtb's user avatar
+dtb
+218k3737 gold badges413413 silver badges437437 bronze badges
+33
+@Alex: I've run a few quick tests and it seems to scale pretty much linearly when generating longer strings (so long as there's actually enough memory available). Having said that, Dan Rigby's answer was almost twice as fast as this one in every test. – 
+LukeH
+ CommentedAug 28, 2009 at 0:33
+9
+Well. If your criteria is that it uses linq and that it has a lousy code narrative then it's definitely the bee's knees. Both the code narrative and actual path of execution is rather inefficient and indirect. Don't get me wrong, I'm a huge code hipster (i love python), but this is pretty much a rube goldberg machine. – 
+eremzeit
+ CommentedSep 29, 2011 at 15:41 
+7
+While this technically answers the question, it's output is very misleading. Generating 8 random characters sounds like there can be very many results, whereas this at best produces 2 billion different results. And in practice even fewer. You should also add a BIG FAT warning to not use this for anything security related stuff. – 
+CodesInChaos
+ CommentedMar 17, 2012 at 20:50
+59
+@xaisoft: Lowercase letters are left as an exercise for the reader. – 
+dtb
+ CommentedSep 30, 2013 at 14:29
+29
+The following line is more memory (and thus time) efficient than the given one return new string(Enumerable.Range(1, length).Select(_ => chars[random.Next(chars.Length)]).ToArray()); – 
+Tyson Williams
+ CommentedNov 11, 2016 at 18:06 
+Show 11 more comments
+511
+
+var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+var stringChars = new char[8];
+var random = new Random();
+
+for (int i = 0; i < stringChars.Length; i++)
+{
+    stringChars[i] = chars[random.Next(chars.Length)];
+}
+
+var finalString = new String(stringChars);
+Not as elegant as the Linq solution.
+
+(Note: The use of the Random class makes this unsuitable for anything security related, such as creating passwords or tokens. Use the RNGCryptoServiceProvider class if you need a strong random number generator.)
+
+Share
+Improve this answer
+Follow
+edited Apr 11, 2019 at 18:27
+TylerH's user avatar
+TylerH
+21.2k8181 gold badges8080 silver badges116116 bronze badges
+answered Aug 27, 2009 at 23:21
+Dan Rigby's user avatar
+Dan Rigby
+18k77 gold badges4545 silver badges6060 bronze badges
+7
+@Alex: This isn't the absolute fastest answer, but it is the fastest "real" answer (ie, of those that allow control over the characters used and the length of the string). – 
+LukeH
+ CommentedAug 28, 2009 at 0:56
+3
+@Alex: Adam Porad's GetRandomFileName solution is quicker but doesn't allow any control of the characters used and the max possible length is 11 chars. Douglas's Guid solution is lightning-fast but the characters are restricted to A-F0-9 and the max possible length is 32 chars. – 
+LukeH
+ CommentedAug 28, 2009 at 1:01
+1
+@Adam: Yes, you could concat the result of multiple calls to GetRandomFileName but then (a) you'd lose your performance advantage, and (b) your code would become more complicated. – 
+LukeH
+ CommentedAug 28, 2009 at 9:08
+4
+@xaisoft create your instance of the Random() object outside of your loop. If you create lots of instances of Random() in a short interval then the call to .Next() will return the same value as Random() uses a time based seed. – 
+Dan Rigby
+ CommentedSep 30, 2013 at 18:16
+2
+@xaisoft Don't use this answer for anything security critical, like passwords. System.Random is not suitable for security. – 
+CodesInChaos
+ CommentedOct 21, 2013 at 10:14
+Show 14 more comments
+457
+
+UPDATED for .NET 6. RNGCryptoServiceProvider is marked as obsolete. Instead, call RandomNumberGenerator.Create(). The code in the answer has been updated accordingly.
+
+UPDATED based on comments. The original implementation generated a-h ~1.95% of the time and the remaining characters ~1.56% of the time. The update generates all characters ~1.61% of the time.
+
+FRAMEWORK SUPPORT - .NET Core 3 (and future platforms that support .NET Standard 2.1 or above) provides a cryptographically sound method RandomNumberGenerator.GetInt32() to generate a random integer within a desired range.
+
+Unlike some of the alternatives presented, this one is cryptographically sound.
+
+using System;
+using System.Security.Cryptography;
+using System.Text;
+
+namespace UniqueKey
+{
+    public class KeyGenerator
+    {
+        internal static readonly char[] chars =
+            "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray(); 
+
+        public static string GetUniqueKey(int size)
+        {            
+            byte[] data = new byte[4*size];
+            using (var crypto = RandomNumberGenerator.Create())
+            {
+                crypto.GetBytes(data);
+            }
+            StringBuilder result = new StringBuilder(size);
+            for (int i = 0; i < size; i++)
+            {
+                var rnd = BitConverter.ToUInt32(data, i * 4);
+                var idx = rnd % chars.Length;
+
+                result.Append(chars[idx]);
+            }
+
+            return result.ToString();
+        }
+
+        public static string GetUniqueKeyOriginal_BIASED(int size)
+        {
+            char[] chars =
+                "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+            byte[] data = new byte[size];
+            using (RNGCryptoServiceProvider crypto = new RNGCryptoServiceProvider())
+            {
+                crypto.GetBytes(data);
+            }
+            StringBuilder result = new StringBuilder(size);
+            foreach (byte b in data)
+            {
+                result.Append(chars[b % (chars.Length)]);
+            }
+            return result.ToString();
+        }
+    }
+}
+Based on a discussion of alternatives here and updated/modified based on the comments below.
+
+Here's a small test harness that demonstrates the distribution of characters in the old and updated output. For a deep discussion of the analysis of randomness, check out random.org.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using UniqueKey;
+
+namespace CryptoRNGDemo
+{
+    class Program
+    {
+
+        const int REPETITIONS = 1000000;
+        const int KEY_SIZE = 32;
+
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Original BIASED implementation");
+            PerformTest(REPETITIONS, KEY_SIZE, KeyGenerator.GetUniqueKeyOriginal_BIASED);
+
+            Console.WriteLine("Updated implementation");
+            PerformTest(REPETITIONS, KEY_SIZE, KeyGenerator.GetUniqueKey);
+            Console.ReadKey();
+        }
+
+        static void PerformTest(int repetitions, int keySize, Func<int, string> generator)
+        {
+            Dictionary<char, int> counts = new Dictionary<char, int>();
+            foreach (var ch in UniqueKey.KeyGenerator.chars) counts.Add(ch, 0);
+
+            for (int i = 0; i < REPETITIONS; i++)
+            {
+                var key = generator(KEY_SIZE); 
+                foreach (var ch in key) counts[ch]++;
+            }
+
+            int totalChars = counts.Values.Sum();
+            foreach (var ch in UniqueKey.KeyGenerator.chars)
+            {
+                Console.WriteLine($"{ch}: {(100.0 * counts[ch] / totalChars).ToString("#.000")}%");
+            }
+        }
+    }
+}
+Update 7/25/2022
+
+Based on a question in the comments, I was curious whether the distribution is truly random.
+
+I'm not a statistician, but I could probably play one on TV. If an actual statistician wants to chime in, that would be most welcome.
+
+There are 62 possible output values (A-Za-Z0-9) and int.MaxValue numbers used to pick an array index. int.MaxValue % 62 is 1, so one character will be selected 1-in-4 billionish times more often than the others. We could further reduce that selection bias by randomly rotating the array of output values prior to indexing.
+
+A T-test or other statistical measure would be the best approach to determine whether there is bias in the output results, but that's not something I can accomplish on my lunch break, so instead I leave you with a modification of the above code that measures deviation from expectation. Note that it tends toward zero.
+
+using System.Security.Cryptography;
+using System.Text;
+
+const int REPETITIONS = 1_000_000;
+const int KEY_SIZE = 32;
+int TASK_COUNT = Environment.ProcessorCount - 1;
+
+var expectedPercentage = 100.0 / KeyGenerator.chars.Length;
+
+var done = false;
+var iterationNr = 1;
+var totalRandomSymbols = 0L;
+
+var grandTotalCounts = new Dictionary<char, long>();
+foreach (var ch in KeyGenerator.chars) grandTotalCounts.Add(ch, 0);
+
+while (!done)
+{
+    var experiments = Enumerable.Range(0, TASK_COUNT).Select(i => Task.Run(Experiment)).ToArray();
+    Task.WaitAll(experiments);
+    var totalCountsThisRun = experiments.SelectMany(e => e.Result)
+        .GroupBy(e => e.Key)
+        .Select(e => new { e.Key, Count = e.Select(_ => _.Value).Sum() })
+        .ToDictionary(e => e.Key, e => e.Count);
+
+    foreach (var ch in KeyGenerator.chars)
+        grandTotalCounts[ch] += totalCountsThisRun[ch];
+
+    var totalChars = grandTotalCounts.Values.Sum();
+    totalRandomSymbols += totalChars;
+
+    var distributionScores = KeyGenerator.chars.Select(ch =>
+    new
+    {
+        Symbol = ch,
+        OverUnder = (100.0 * grandTotalCounts[ch] / totalChars) - expectedPercentage
+
+    });
+
+    Console.WriteLine($"Iteration {iterationNr++}. Total random symbols: {totalRandomSymbols:N0}");
+    foreach (var chWithValue in distributionScores.OrderByDescending(c => c.OverUnder))
+    {
+        Console.WriteLine($"{chWithValue.Symbol}: {chWithValue.OverUnder:#.00000}%");
+    }
+
+    done = Console.KeyAvailable;        
+}
+
+Dictionary<char, long> Experiment()
+{
+    var counts = new Dictionary<char, long>();
+    foreach (var ch in KeyGenerator.chars) counts.Add(ch, 0);
+
+    for (int i = 0; i < REPETITIONS; i++)
+    {
+        var key = KeyGenerator.GetUniqueKey(KEY_SIZE);
+        foreach (var ch in key) counts[ch]++;
+    }
+
+    return counts;
+}
+
+public class KeyGenerator
+{
+    internal static readonly char[] chars =
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+
+    public static string GetUniqueKey(int size)
+    {
+        byte[] data = new byte[4 * size];
+        using (var crypto = RandomNumberGenerator.Create())
+        {
+            crypto.GetBytes(data);
+        }
+        StringBuilder result = new StringBuilder(size);
+        for (int i = 0; i < size; i++)
+        {
+            var rnd = BitConverter.ToUInt32(data, i * 4);
+            var idx = rnd % chars.Length;
+
+            result.Append(chars[idx]);
+        }
+
+        return result.ToString();
+    }
+}
+Share
+Improve this answer
+Follow
+edited Jul 25, 2022 at 20:12
+answered Aug 27, 2009 at 23:19
+Eric J.'s user avatar
+Eric J.
+150k6565 gold badges352352 silver badges561561 bronze badges
+12
+This looks like the correct approach to me - random passwords, salts, entropy and so forth should not be generated using Random() which is optimized for speed and generates reproducible sequences of numbers; RNGCryptoServiceProvider.GetNonZeroBytes() on the other hand produces wild sequences of numbers that are NOT reproducible. – 
+mindplay.dk
+ CommentedApr 18, 2011 at 20:09
+27
+The letters are slightly biased(255 % 62 != 0). Despite this minor flaw, it is by far the best solution here. – 
+CodesInChaos
+ CommentedMar 17, 2012 at 20:52 
+14
+Note that this is not sound if you want crypto-strength, unbiased randomness. (And if you don't want that then why use RNGCSP in the first place?) Using mod to index into the chars array means that you'll get biased output unless chars.Length happens to be a divisor of 256. – 
+LukeH
+ CommentedApr 3, 2012 at 16:35
+15
+One possibility to reduce the bias a lot, is requesting 4*maxSize random bytes, then use (UInt32)(BitConverter.ToInt32(data,4*i)% chars.Length. I'd also use GetBytes instead of GetNonZeroBytes. And finally you can remove the first call to GetNonZeroBytes. You're not using its result. – 
+CodesInChaos
+ CommentedApr 4, 2012 at 8:19
+18
+Fun fact: A-Z a-z 0-9 is 62 characters. People are pointing out letter bias because 256 % 62 != 0. YouTube's video IDs are A-Z a-z 0-9, as well as "-" and "_", which produces 64 possible characters, which divides into 256 evenly. Coincidence? I think not! :) – 
+qJake
+ CommentedSep 26, 2016 at 18:25
+Show 33 more comments
+238
+
+Solution 1 - largest 'range' with most flexible length
+
+string get_unique_string(int string_length) {
+    using(var rng = new RNGCryptoServiceProvider()) {
+        var bit_count = (string_length * 6);
+        var byte_count = ((bit_count + 7) / 8); // rounded up
+        var bytes = new byte[byte_count];
+        rng.GetBytes(bytes);
+        return Convert.ToBase64String(bytes);
+    }
+}
+This solution has more range than using a GUID because a GUID has a couple of fixed bits that are always the same and therefore not random, for example the 13 character in hex is always "4" - at least in a version 6 GUID.
+
+This solution also lets you generate a string of any length.
+
+Solution 2 - One line of code - good for up to 22 characters
+
+Convert.ToBase64String(Guid.NewGuid().ToByteArray()).Substring(0, 8);
+You can't generate strings as long as Solution 1 and the string doesn't have the same range due to fixed bits in GUID's, but in a lot of cases this will do the job.
+
+Solution 3 - Slightly less code
+
+Guid.NewGuid().ToString("n").Substring(0, 8);
+Mostly keeping this here for historical purpose. It uses slightly less code, that though comes as the expense of having less range - because it uses hex instead of base64 it takes more characters to represent the same range compared the other solutions.
+
+Which means more chance of collision - testing it with 100,000 iterations of 8 character strings generated one duplicate.
+
+Share
+Improve this answer
+Follow
+edited Mar 20, 2018 at 17:31
+Luis Perez's user avatar
+Luis Perez
+28.2k1111 gold badges8484 silver badges8181 bronze badges
+answered Aug 28, 2009 at 0:00
+Douglas's user avatar
+Douglas
+2,59211 gold badge1616 silver badges1010 bronze badges
+22
+You actually generated a duplicate? Surprising at 5,316,911,983,139,663,491,615,228,241,121,400,000 possible combinations of GUIDs. – 
+Alex
+ CommentedAug 28, 2009 at 0:10
+76
+@Alex: He's shortening the GUID to 8 characters, so the probability of collisions is much higher than that of GUIDs. – 
+dtb
+ CommentedAug 28, 2009 at 0:19
+25
+Nobody can appreciate this other than nerds :) Yes you are absolutely right, the 8 char limit makes a difference. – 
+Alex
+ CommentedAug 28, 2009 at 0:36
+31
+Guid.NewGuid().ToString("n") will keep the dashes out, no Replace() call needed. But it should be mentioned, GUIDs are only 0-9 and A-F. The number of combinations is "good enough," but nowhere close to what a true alphanumeric random string permits. The chances of collision are 1:4,294,967,296 -- the same as a random 32-bit integer. – 
+richardtallent
+ CommentedAug 28, 2009 at 0:40
+34
+1) GUIDs are designed to be unique, not random. While current versions of windows generate V4 GUIDs which are indeed random, that's not guaranteed. For example older versions of windows used V1 GUIDs, where your could would fail. 2) Just using hex characters reduces the quality of the random string significantly. From 47 to 32 bits. 3) People are underestimating the collision probability, since they give it for individual pairs. If you generate 100k 32 bit values, you probably have one collision among them. See Birthday problem. – 
+CodesInChaos
+ CommentedNov 16, 2012 at 12:33 
+Show 6 more comments
+99
+
+Here's an example that I stole from Sam Allen example at Dot Net Perls
+
+If you only need 8 characters, then use Path.GetRandomFileName() in the System.IO namespace. Sam says using the "Path.GetRandomFileName method here is sometimes superior, because it uses RNGCryptoServiceProvider for better randomness. However, it is limited to 11 random characters."
+
+GetRandomFileName always returns a 12 character string with a period at the 9th character. So you'll need to strip the period (since that's not random) and then take 8 characters from the string. Actually, you could just take the first 8 characters and not worry about the period.
+
+public string Get8CharacterRandomString()
+{
+    string path = Path.GetRandomFileName();
+    path = path.Replace(".", ""); // Remove period.
+    return path.Substring(0, 8);  // Return 8 character string
+}
+PS: thanks Sam
+
+Share
+Improve this answer
+Follow
+edited Aug 27, 2009 at 23:37
+dtb's user avatar
+dtb
+218k3737 gold badges413413 silver badges437437 bronze badges
+answered Aug 27, 2009 at 23:36
+Adam Porad's user avatar
+Adam Porad
+14.5k44 gold badges3333 silver badges5656 bronze badges
+43
+This works well. I ran it through 100,000 iterations and never had a duplicate name. However, I did find several vulgar words (in English). Wouldn't have even thought of this except one of the first ones in the list had F*** in it . Just a heads up if you use this for something the user will see. – 
+techturtle
+ CommentedOct 9, 2012 at 22:35
+5
+@techturtle Thanks for the warning. I suppose there's a risk for vulgar words with any random string generation that uses all letters in the alphabet. – 
+Adam Porad
+ CommentedOct 10, 2012 at 23:38
+nice and simple but not good for long string ... vote for this good trick – 
+Maher Abuthraa
+ CommentedFeb 28, 2014 at 9:55
+This method seems to return only lower case alphanumeric strings. – 
+jaybro
+ CommentedJun 5, 2014 at 14:30
+9
+There are vulgar words from time to time, but if you keep this running long enough eventually it writes Shakespeare. (Just a few lifetimes of the universe. :) – 
+John von No Man
+ CommentedApr 30, 2018 at 17:12
+Show 4 more comments
+43
+
+The main goals of my code are:
+
+The distribution of strings is almost uniform (don't care about minor deviations, as long as they're small)
+It outputs more than a few billion strings for each argument set. Generating an 8 character string (~47 bits of entropy) is meaningless if your PRNG only generates 2 billion (31 bits of entropy) different values.
+It's secure, since I expect people to use this for passwords or other security tokens.
+The first property is achieved by taking a 64 bit value modulo the alphabet size. For small alphabets (such as the 62 characters from the question) this leads to negligible bias. The second and third property are achieved by using RNGCryptoServiceProvider instead of System.Random.
+
+using System;
+using System.Security.Cryptography;
+
+public static string GetRandomAlphanumericString(int length)
+{
+    const string alphanumericCharacters =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+        "abcdefghijklmnopqrstuvwxyz" +
+        "0123456789";
+    return GetRandomString(length, alphanumericCharacters);
+}
+
+public static string GetRandomString(int length, IEnumerable<char> characterSet)
+{
+    if (length < 0)
+        throw new ArgumentException("length must not be negative", "length");
+    if (length > int.MaxValue / 8) // 250 million chars ought to be enough for anybody
+        throw new ArgumentException("length is too big", "length");
+    if (characterSet == null)
+        throw new ArgumentNullException("characterSet");
+    var characterArray = characterSet.Distinct().ToArray();
+    if (characterArray.Length == 0)
+        throw new ArgumentException("characterSet must not be empty", "characterSet");
+
+    var bytes = new byte[length * 8];
+    var result = new char[length];
+    using (var cryptoProvider = new RNGCryptoServiceProvider())
+    {
+        cryptoProvider.GetBytes(bytes);
+    }
+    for (int i = 0; i < length; i++)
+    {
+        ulong value = BitConverter.ToUInt64(bytes, i * 8);
+        result[i] = characterArray[value % (uint)characterArray.Length];
+    }
+    return new string(result);
+}
+Share
+Improve this answer
+Follow
+edited Nov 7, 2018 at 6:46
+piojo's user avatar
+piojo
+6,73311 gold badge2929 silver badges3939 bronze badges
+answered Nov 16, 2012 at 11:57
+CodesInChaos's user avatar
+CodesInChaos
+109k2626 gold badges222222 silver badges267267 bronze badges
+1
+There is no intersection with 64 x Z and Math.Pow(2,Y). So while making bigger numbers reduces the bias, it doesn't eliminate it. I updated my answer down below, my approach was to discard random inputs and replace with another value. – 
+Kind Contributor
+ CommentedFeb 20, 2016 at 10:00
+@Todd I know that it doesn't eliminate the bias, but I chose the simplicity of this solution over eliminating a practically irrelevant bias. – 
+CodesInChaos
+ CommentedFeb 20, 2016 at 10:32
+I agree for most cases it's probably practically irrelevant. But now I've updated mine to be both as fast as Random and a little more secure than yours. All open source for all to share. Yes, I wasted way too much time on this... – 
+Kind Contributor
+ CommentedFeb 20, 2016 at 12:06
+If we are using RNG provider do we have any way to avoid bias in theory? I am not sure... If Todd mean the way when he generates additional random number (when we are in bias zone) then it can be wrong assumption. RNG has almost linear distribution of all generated values in average. But it does not mean that we will not have local correlation between generated bytes. So additional byte only for bias zone can still give us some bias but due to different reason. Most likely this bias will be very small. BUT in this case increasing of total generated bytes is more straightforward way. – 
+Maxim
+ CommentedJul 31, 2017 at 16:18
+1
+@Maxim You can use rejection to completely eliminate the bias (assuming the underlying generator is perfectly random). In exchange the code might run arbitrarily long (with exponentially small probability). – 
+CodesInChaos
+ CommentedJul 31, 2017 at 17:56 
+Show 2 more comments
+38
+
+The simplest:
+
+public static string GetRandomAlphaNumeric()
+{
+    return Path.GetRandomFileName().Replace(".", "").Substring(0, 8);
+}
+You can get better performance if you hard code the char array and rely on System.Random:
+
+public static string GetRandomAlphaNumeric()
+{
+    var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    return new string(chars.Select(c => chars[random.Next(chars.Length)]).Take(8).ToArray());
+}
+If ever you worry the English alphabets can change sometime around and you might lose business, then you can avoid hard coding, but should perform slightly worse (comparable to Path.GetRandomFileName approach)
+
+public static string GetRandomAlphaNumeric()
+{
+    var chars = 'a'.To('z').Concat('0'.To('9')).ToList();
+    return new string(chars.Select(c => chars[random.Next(chars.Length)]).Take(8).ToArray());
+}
+
+public static IEnumerable<char> To(this char start, char end)
+{
+    if (end < start)
+        throw new ArgumentOutOfRangeException("the end char should not be less than start char", innerException: null);
+    return Enumerable.Range(start, end - start + 1).Select(i => (char)i);
+}
+The last two approaches looks better if you can make them an extension method on System.Random instance.
+
+Share
+Improve this answer
+Follow
+edited Jun 4, 2014 at 10:35
+answered Apr 13, 2013 at 7:09
+nawfal's user avatar
+nawfal
+73.6k5959 gold badges340340 silver badges379379 bronze badges
+1
+Using chars.Select is a big ugly since it relies on the output size being at most the alphabet size. – 
+CodesInChaos
+ CommentedJun 4, 2014 at 10:09
+@CodesInChaos I'm not sure if I understand you. You mean in the 'a'.To('z') approach? – 
+nawfal
+ CommentedJun 4, 2014 at 10:18
+1
+1) chars.Select().Take(n)` only works if chars.Count >= n. Selecting on a sequence you don't actually use is a bit unintuitive, especially with that implicit length constraint. I'd rather use Enumerable.Range or Enumerable.Repeat. 2) The error message "the end char should be less than start char" is the wrong way round/missing a not. – 
+CodesInChaos
+ CommentedJun 4, 2014 at 10:20 
+@CodesInChaos but in my case chars.Count is way > n. Also I dont get the unintuitive part. That does make all uses Take unintuitive doesnt it? I dont believe it. Thanks for pointing the typo. – 
+nawfal
+ CommentedJun 4, 2014 at 10:34 
+5
+This is featured on theDailyWTF.com as a CodeSOD article. – 
+user177800
+ CommentedOct 3, 2018 at 5:33
+Show 1 more comment
+24
+
+Just some performance comparisons of the various answers in this thread:
+
+Methods & Setup
+// what's available
+public static string possibleChars = "abcdefghijklmnopqrstuvwxyz";
+// optimized (?) what's available
+public static char[] possibleCharsArray = possibleChars.ToCharArray();
+// optimized (precalculated) count
+public static int possibleCharsAvailable = possibleChars.Length;
+// shared randomization thingy
+public static Random random = new Random();
+
+
+// http://stackoverflow.com/a/1344242/1037948
+public string LinqIsTheNewBlack(int num) {
+    return new string(
+    Enumerable.Repeat(possibleCharsArray, num)
+              .Select(s => s[random.Next(s.Length)])
+              .ToArray());
+}
+
+// http://stackoverflow.com/a/1344258/1037948
+public string ForLoop(int num) {
+    var result = new char[num];
+    while(num-- > 0) {
+        result[num] = possibleCharsArray[random.Next(possibleCharsAvailable)];
+    }
+    return new string(result);
+}
+
+public string ForLoopNonOptimized(int num) {
+    var result = new char[num];
+    while(num-- > 0) {
+        result[num] = possibleChars[random.Next(possibleChars.Length)];
+    }
+    return new string(result);
+}
+
+public string Repeat(int num) {
+    return new string(new char[num].Select(o => possibleCharsArray[random.Next(possibleCharsAvailable)]).ToArray());
+}
+
+// http://stackoverflow.com/a/1518495/1037948
+public string GenerateRandomString(int num) {
+  var rBytes = new byte[num];
+  random.NextBytes(rBytes);
+  var rName = new char[num];
+  while(num-- > 0)
+    rName[num] = possibleCharsArray[rBytes[num] % possibleCharsAvailable];
+  return new string(rName);
+}
+
+//SecureFastRandom - or SolidSwiftRandom
+static string GenerateRandomString(int Length) //Configurable output string length
+{
+    byte[] rBytes = new byte[Length]; 
+    char[] rName = new char[Length];
+    SolidSwiftRandom.GetNextBytesWithMax(rBytes, biasZone);
+    for (var i = 0; i < Length; i++)
+    {
+        rName[i] = charSet[rBytes[i] % charSet.Length];
+    }
+    return new string(rName);
+}
+Results
+Tested in LinqPad. For string size of 10, generates:
+
+from Linq = chdgmevhcy [10]
+from Loop = gtnoaryhxr [10]
+from Select = rsndbztyby [10]
+from GenerateRandomString = owyefjjakj [10]
+from SecureFastRandom = VzougLYHYP [10]
+from SecureFastRandom-NoCache = oVQXNGmO1S [10]
+And the performance numbers tend to vary slightly, very occasionally NonOptimized is actually faster, and sometimes ForLoop and GenerateRandomString switch who's in the lead.
+
+LinqIsTheNewBlack (10000x) = 96762 ticks elapsed (9.6762 ms)
+ForLoop (10000x) = 28970 ticks elapsed (2.897 ms)
+ForLoopNonOptimized (10000x) = 33336 ticks elapsed (3.3336 ms)
+Repeat (10000x) = 78547 ticks elapsed (7.8547 ms)
+GenerateRandomString (10000x) = 27416 ticks elapsed (2.7416 ms)
+SecureFastRandom (10000x) = 13176 ticks elapsed (5ms) lowest [Different machine]
+SecureFastRandom-NoCache (10000x) = 39541 ticks elapsed (17ms) lowest [Different machine]
+Share
+Improve this answer
+Follow
+edited Feb 21, 2016 at 11:50
+Kind Contributor's user avatar
+Kind Contributor
+18.7k66 gold badges5656 silver badges7272 bronze badges
+answered Jun 13, 2013 at 16:45
+drzaus's user avatar
+drzaus
+25.2k1717 gold badges145145 silver badges205205 bronze badges
+4
+Would be interesting to know which ones created dupes. – 
+Rebecca
+ CommentedAug 1, 2013 at 12:43
+@Junto -- to figure out which results in duplicates, something like var many = 10000; Assert.AreEqual(many, new bool[many].Select(o => EachRandomizingMethod(10)).Distinct().Count());, where you replace EachRandomizingMethod with...each method – 
+drzaus
+ CommentedSep 11, 2013 at 17:06 
+Add a comment
+21
+
+One line of code Membership.GeneratePassword() does the trick :)
+
+Here is a demo for the same.
+
+Share
+Improve this answer
+Follow
+edited May 3, 2018 at 8:58
+Stephen Kennedy's user avatar
+Stephen Kennedy
+21.7k2424 gold badges9898 silver badges114114 bronze badges
+answered Jul 10, 2014 at 20:40
+Pooran's user avatar
+Pooran
+1,69022 gold badges1919 silver badges2727 bronze badges
+1
+Looks like Microsoft moved the link.. another code sample is at msdn.microsoft.com/en-us/library/ms152017 or aspnet.4guysfromrolla.com/demos/GeneratePassword.aspx or developer.xamarin.com/api/member/… – 
+Pooran
+ CommentedAug 2, 2015 at 18:26 
+I thought of that but couldn't get rid of the non alphanumeric characters as the 2nd argument is the MINIMUM non alpha characters – 
+Andy
+ CommentedApr 5, 2018 at 10:29
+Add a comment
+18
+
+Update 2023 / .NET 8:
+A static helper method has been added to the built-in RandomNumberGenerator class in .NET 8, called GetString — usage:
+
+using System.Security.Cryptography;
+
+string randomAlphanumericString = RandomNumberGenerator.GetString(
+    choices: "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789",
+    length: 10
+); // e.g. 92rs31Oowo
+Simplest and most flexible solution with cryptographic security (.NET Core 3.0+):
+If you're using .NET Core 3.0 or above, you can use the new static GetInt32 method (which is cryptographically secure) on the RandomNumberGenerator class to generate a random index for a given character set and populate the result that way quite easily.
+
+This approach is far simpler than, for instance, the one proposed in this answer; and it also provides complete flexibility since you can pass in any character set you want.
+
+public static string GenerateRandomString(int length, string charSet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+{
+    var charArray = charSet.Distinct().ToArray();
+    char[] result = new char[length];
+    for (int i = 0; i < length; i++)
+        result[i] = charArray[RandomNumberGenerator.GetInt32(charArray.Length)];
+    return new string(result);
+}
+Usage:
+
+string randomAlphanumericString = GenerateRandomString(length: 10);
+Share
+Improve this answer
+Follow
+edited Jun 14, 2024 at 13:49
+answered Jul 24, 2022 at 19:56
+Arad's user avatar
+Arad
+13.2k1111 gold badges7070 silver badges9494 bronze badges
+1
+This is the best answer to the question. I had to change the type of the charSet parameter from IEnumerable<char> to string to get this to compile with its default value in C# 12 (.NET 8). – 
+Ben Hutchison
+ CommentedMar 31, 2024 at 2:04
+1
+@BenHutchison Hmm thanks for pointing that out actually; not sure how I had missed that. Just updated the code. – 
+Arad
+ CommentedApr 4, 2024 at 19:23 
+Add a comment
+15
+
+My simple one line code works for me :)
+
+string  random = string.Join("", Guid.NewGuid().ToString("n").Take(8).Select(o => o));
+
+Response.Write(random.ToUpper());
+Response.Write(random.ToLower());
+To expand on this for any length string
+
+    public static string RandomString(int length)
+    {
+        //length = length < 0 ? length * -1 : length;
+        var str = "";
+
+        do 
+        {
+            str += Guid.NewGuid().ToString().Replace("-", "");
+        }
+
+        while (length > str.Length);
+
+        return str.Substring(0, length);
+    }
+Share
+Improve this answer
+Follow
+edited Apr 5, 2018 at 11:12
+Andy's user avatar
+Andy
+2,36411 gold badge3030 silver badges3434 bronze badges
+answered Sep 29, 2015 at 12:38
+Raj Kumar - rajkrs's user avatar
+Raj Kumar - rajkrs
+1,3631616 silver badges2121 bronze badges
+1
+I like the guid method too - feels really light – 
+Andy
+ CommentedApr 5, 2018 at 10:19
+3
+For a 5 digit character, this took 0ms but the accepted answer took 2ms. Why reinvent the wheel when you have a Guid class :) Improvement on your answer should is .ToString("N") to remove the hyphens – 
+Tom McDonough
+ CommentedAug 17, 2021 at 9:23
+Try to avoid String Concatenation especially in For/While loops, internally String.Join uses a StringBuilder which is what most people use for string concatenation. This way each string assigment doesn't create a new variable on the managed heap. – 
+Jeremy Thompson
+ CommentedFeb 5, 2024 at 5:21
+Add a comment
+14
+
+The code written by Eric J. is quite sloppy (it is quite clear that it is from 6 years ago... he probably wouldn't write that code today), and there are even some problems.
+
+Unlike some of the alternatives presented, this one is cryptographically sound.
+
+Untrue... There is a bias in the password (as written in a comment), bcdefgh are a little more probable than the others (the a isn't because by the GetNonZeroBytes it isn't generating bytes with a value of zero, so the bias for the a is balanced by it), so it isn't really cryptographically sound.
+
+This should correct all the problems.
+
+public static string GetUniqueKey(int size = 6, string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+{
+    using (var crypto = new RNGCryptoServiceProvider())
+    {
+        var data = new byte[size];
+
+        // If chars.Length isn't a power of 2 then there is a bias if
+        // we simply use the modulus operator. The first characters of
+        // chars will be more probable than the last ones.
+
+        // buffer used if we encounter an unusable random byte. We will
+        // regenerate it in this buffer
+        byte[] smallBuffer = null;
+
+        // Maximum random number that can be used without introducing a
+        // bias
+        int maxRandom = byte.MaxValue - ((byte.MaxValue + 1) % chars.Length);
+
+        crypto.GetBytes(data);
+
+        var result = new char[size];
+
+        for (int i = 0; i < size; i++)
+        {
+            byte v = data[i];
+
+            while (v > maxRandom)
+            {
+                if (smallBuffer == null)
+                {
+                    smallBuffer = new byte[1];
+                }
+
+                crypto.GetBytes(smallBuffer);
+                v = smallBuffer[0];
+            }
+
+            result[i] = chars[v % chars.Length];
+        }
+
+        return new string(result);
+    }
+}
+Share
+Improve this answer
+Follow
+answered Aug 12, 2015 at 7:53
+xanatos's user avatar
+xanatos
+112k1313 gold badges208208 silver badges294294 bronze badges
+Add a comment
+8
+
+We also use custom string random but we implemented is as a string's helper so it provides some flexibility...
+
+public static string Random(this string chars, int length = 8)
+{
+    var randomString = new StringBuilder();
+    var random = new Random();
+
+    for (int i = 0; i < length; i++)
+        randomString.Append(chars[random.Next(chars.Length)]);
+
+    return randomString.ToString();
+}
+Usage
+
+var random = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".Random();
+or
+
+var random = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789".Random(16);
+Share
+Improve this answer
+Follow
+answered Jun 26, 2014 at 15:12
+A. Wheatman's user avatar
+A. Wheatman
+6,41666 gold badges4848 silver badges6363 bronze badges
+Add a comment
+8
+
+A slightly cleaner version of DTB's solution.
+
+    var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    var random = new Random();
+    var list = Enumerable.Repeat(0, 8).Select(x=>chars[random.Next(chars.Length)]);
+    return string.Join("", list);
+Your style preferences may vary.
+
+Share
+Improve this answer
+Follow
+answered Apr 27, 2015 at 20:47
+Rob Deary's user avatar
+Rob Deary
+1,0071111 silver badges33 bronze badges
+This is much better and more efficient than the accepted answer. – 
+Wedge
+ CommentedMay 27, 2016 at 16:49
+Add a comment
+8
+
+ public static string RandomString(int length)
+    {
+        const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+        var random = new Random();
+        return new string(Enumerable.Repeat(chars, length).Select(s => s[random.Next(s.Length)]).ToArray());
+    }
+Share
+Improve this answer
+Follow
+answered Nov 24, 2015 at 8:46
+Tejas's user avatar
+Tejas
+46755 silver badges1313 bronze badges
+Add a comment
+6
+
+Another option could be to use Linq and aggregate random chars into a stringbuilder.
+
+var chars = "abcdefghijklmnopqrstuvwxyz123456789".ToArray();
+string pw = Enumerable.Range(0, passwordLength)
+                      .Aggregate(
+                          new StringBuilder(),
+                          (sb, n) => sb.Append((chars[random.Next(chars.Length)])),
+                          sb => sb.ToString());
+Share
+Improve this answer
+Follow
+edited Dec 8, 2012 at 20:39
+answered Jan 24, 2012 at 23:42
+AAD's user avatar
+AAD
+37933 silver badges99 bronze badges
+Add a comment
+6
+
+Question: Why should I waste my time using Enumerable.Range instead of typing in "ABCDEFGHJKLMNOPQRSTUVWXYZ0123456789"?
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public class Test
+{
+    public static void Main()
+    {
+        var randomCharacters = GetRandomCharacters(8, true);
+        Console.WriteLine(new string(randomCharacters.ToArray()));
+    }
+
+    private static List<char> getAvailableRandomCharacters(bool includeLowerCase)
+    {
+        var integers = Enumerable.Empty<int>();
+        integers = integers.Concat(Enumerable.Range('A', 26));
+        integers = integers.Concat(Enumerable.Range('0', 10));
+
+        if ( includeLowerCase )
+            integers = integers.Concat(Enumerable.Range('a', 26));
+
+        return integers.Select(i => (char)i).ToList();
+    }
+
+    public static IEnumerable<char> GetRandomCharacters(int count, bool includeLowerCase)
+    {
+        var characters = getAvailableRandomCharacters(includeLowerCase);
+        var random = new Random();
+        var result = Enumerable.Range(0, count)
+            .Select(_ => characters[random.Next(characters.Count)]);
+
+        return result;
+    }
+}
+Answer: Magic strings are BAD. Did ANYONE notice there was no "I" in my string at the top? My mother taught me not to use magic strings for this very reason...
+
+n.b. 1: As many others like @dtb said, don't use System.Random if you need cryptographic security...
+
+n.b. 2: This answer isn't the most efficient or shortest, but I wanted the space to separate the answer from the question. The purpose of my answer is more to warn against magic strings than to provide a fancy innovative answer.
+
+Share
+Improve this answer
+Follow
+edited Feb 22, 2015 at 18:17
+answered Feb 22, 2015 at 15:16
+Wai Ha Lee's user avatar
+Wai Ha Lee
+8,856101101 gold badges6161 silver badges9696 bronze badges
+Why do I care that there's no "I?" – 
+Christine
+ CommentedDec 12, 2016 at 19:01
+1
+Alphanumeric (ignoring case) is [A-Z0-9]. If, by accident, your random string only ever covers [A-HJ-Z0-9] the result doesn't cover the full allowable range, which may be problematic. – 
+Wai Ha Lee
+ CommentedDec 13, 2016 at 16:14
+How would that be problematic? So it doesn't contain I. Is it because there's one less character and that makes it easier to crack? What are the statistics on crackable passwords that contain 35 characters in the range than 36. I think I would rather risk it... or just proof reed the character range... than include all that extra garbage in my code. But, that's me. I mean, not to be a butt hole, I'm just saying. Sometimes I think programmers have a tendency go the extra-complex route for the sake of being extra-complex. – 
+Christine
+ CommentedDec 13, 2016 at 16:22 
+1
+It deepends on the use case. It's very common to exclude characters such as I and O from these types of random strings to avoid humans confusing them with 1 and 0. If you don't care about having a human-readable string, fine, but if it's something someone might need to type, then it's actually smart to remove those characters. – 
+Chris Pratt
+ CommentedAug 22, 2017 at 3:04
+Add a comment
+6
+
+After reviewing the other answers and considering CodeInChaos' comments, along with CodeInChaos still biased (although less) answer, I thought a final ultimate cut and paste solution was needed. So while updating my answer I decided to go all out.
+
+For an up to date version of this code, please visit the new Hg repository on Bitbucket: https://bitbucket.org/merarischroeder/secureswiftrandom. I recommend you copy and paste the code from: https://bitbucket.org/merarischroeder/secureswiftrandom/src/6c14b874f34a3f6576b0213379ecdf0ffc7496ea/Code/Alivate.SolidSwiftRandom/SolidSwiftRandom.cs?at=default&fileviewer=file-view-default (make sure you click the Raw button to make it easier to copy and make sure you have the latest version, I think this link goes to a specific version of the code, not the latest).
+
+Updated notes:
+
+Relating to some other answers - If you know the length of the output, you don't need a StringBuilder, and when using ToCharArray, this creates and fills the array (you don't need to create an empty array first)
+Relating to some other answers - You should use NextBytes, rather than getting one at a time for performance
+Technically you could pin the byte array for faster access.. it's usually worth it when your iterating more than 6-8 times over a byte array. (Not done here)
+Use of RNGCryptoServiceProvider for best randomness
+Use of caching of a 1MB buffer of random data - benchmarking shows cached single bytes access speed is ~1000x faster - taking 9ms over 1MB vs 989ms for uncached.
+Optimised rejection of bias zone within my new class.
+End solution to question:
+
+static char[] charSet =  "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".ToCharArray();
+static int byteSize = 256; //Labelling convenience
+static int biasZone = byteSize - (byteSize % charSet.Length);
+public string GenerateRandomString(int Length) //Configurable output string length
+{
+    byte[] rBytes = new byte[Length]; //Do as much before and after lock as possible
+    char[] rName = new char[Length];
+    SecureFastRandom.GetNextBytesMax(rBytes, biasZone);
+    for (var i = 0; i < Length; i++)
+    {
+        rName[i] = charSet[rBytes[i] % charSet.Length];
+    }
+    return new string(rName);
+}
+But you need my new (untested) class:
+
+/// <summary>
+/// My benchmarking showed that for RNGCryptoServiceProvider:
+/// 1. There is negligable benefit of sharing RNGCryptoServiceProvider object reference 
+/// 2. Initial GetBytes takes 2ms, and an initial read of 1MB takes 3ms (starting to rise, but still negligable)
+/// 2. Cached is ~1000x faster for single byte at a time - taking 9ms over 1MB vs 989ms for uncached
+/// </summary>
+class SecureFastRandom
+{
+    static byte[] byteCache = new byte[1000000]; //My benchmark showed that an initial read takes 2ms, and an initial read of this size takes 3ms (starting to raise)
+    static int lastPosition = 0;
+    static int remaining = 0;
+
+    /// <summary>
+    /// Static direct uncached access to the RNGCryptoServiceProvider GetBytes function
+    /// </summary>
+    /// <param name="buffer"></param>
+    public static void DirectGetBytes(byte[] buffer)
+    {
+        using (var r = new RNGCryptoServiceProvider())
+        {
+            r.GetBytes(buffer);
+        }
+    }
+
+    /// <summary>
+    /// Main expected method to be called by user. Underlying random data is cached from RNGCryptoServiceProvider for best performance
+    /// </summary>
+    /// <param name="buffer"></param>
+    public static void GetBytes(byte[] buffer)
+    {
+        if (buffer.Length > byteCache.Length)
+        {
+            DirectGetBytes(buffer);
+            return;
+        }
+
+        lock (byteCache)
+        {
+            if (buffer.Length > remaining)
+            {
+                DirectGetBytes(byteCache);
+                lastPosition = 0;
+                remaining = byteCache.Length;
+            }
+
+            Buffer.BlockCopy(byteCache, lastPosition, buffer, 0, buffer.Length);
+            lastPosition += buffer.Length;
+            remaining -= buffer.Length;
+        }
+    }
+
+    /// <summary>
+    /// Return a single byte from the cache of random data.
+    /// </summary>
+    /// <returns></returns>
+    public static byte GetByte()
+    {
+        lock (byteCache)
+        {
+            return UnsafeGetByte();
+        }
+    }
+
+    /// <summary>
+    /// Shared with public GetByte and GetBytesWithMax, and not locked to reduce lock/unlocking in loops. Must be called within lock of byteCache.
+    /// </summary>
+    /// <returns></returns>
+    static byte UnsafeGetByte()
+    {
+        if (1 > remaining)
+        {
+            DirectGetBytes(byteCache);
+            lastPosition = 0;
+            remaining = byteCache.Length;
+        }
+
+        lastPosition++;
+        remaining--;
+        return byteCache[lastPosition - 1];
+    }
+
+    /// <summary>
+    /// Rejects bytes which are equal to or greater than max. This is useful for ensuring there is no bias when you are modulating with a non power of 2 number.
+    /// </summary>
+    /// <param name="buffer"></param>
+    /// <param name="max"></param>
+    public static void GetBytesWithMax(byte[] buffer, byte max)
+    {
+        if (buffer.Length > byteCache.Length / 2) //No point caching for larger sizes
+        {
+            DirectGetBytes(buffer);
+
+            lock (byteCache)
+            {
+                UnsafeCheckBytesMax(buffer, max);
+            }
+        }
+        else
+        {
+            lock (byteCache)
+            {
+                if (buffer.Length > remaining) //Recache if not enough remaining, discarding remaining - too much work to join two blocks
+                    DirectGetBytes(byteCache);
+
+                Buffer.BlockCopy(byteCache, lastPosition, buffer, 0, buffer.Length);
+                lastPosition += buffer.Length;
+                remaining -= buffer.Length;
+
+                UnsafeCheckBytesMax(buffer, max);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Checks buffer for bytes equal and above max. Must be called within lock of byteCache.
+    /// </summary>
+    /// <param name="buffer"></param>
+    /// <param name="max"></param>
+    static void UnsafeCheckBytesMax(byte[] buffer, byte max)
+    {
+        for (int i = 0; i < buffer.Length; i++)
+        {
+            while (buffer[i] >= max)
+                buffer[i] = UnsafeGetByte(); //Replace all bytes which are equal or above max
+        }
+    }
+}
+For history - my older solution for this answer, used Random object:
+
+    private static char[] charSet =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789".ToCharArray();
+
+    static rGen = new Random(); //Must share, because the clock seed only has Ticks (~10ms) resolution, yet lock has only 20-50ns delay.
+    static int byteSize = 256; //Labelling convenience
+    static int biasZone = byteSize - (byteSize % charSet.Length);
+    static bool SlightlyMoreSecurityNeeded = true; //Configuration - needs to be true, if more security is desired and if charSet.Length is not divisible by 2^X.
+    public string GenerateRandomString(int Length) //Configurable output string length
+    {
+      byte[] rBytes = new byte[Length]; //Do as much before and after lock as possible
+      char[] rName = new char[Length];
+      lock (rGen) //~20-50ns
+      {
+          rGen.NextBytes(rBytes);
+
+          for (int i = 0; i < Length; i++)
+          {
+              while (SlightlyMoreSecurityNeeded && rBytes[i] >= biasZone) //Secure against 1/5 increased bias of index[0-7] values against others. Note: Must exclude where it == biasZone (that is >=), otherwise there's still a bias on index 0.
+                  rBytes[i] = rGen.NextByte();
+              rName[i] = charSet[rBytes[i] % charSet.Length];
+          }
+      }
+      return new string(rName);
+    }
+Performance:
+
+SecureFastRandom - First single run = ~9-33ms. Imperceptible. Ongoing: 5ms (sometimes it goes up to 13ms) over 10,000 iterations, With a single average iteration= 1.5 microseconds.. Note: Requires generally 2, but occasionally up to 8 cache refreshes - depends on how many single bytes exceed the bias zone
+Random - First single run = ~0-1ms. Imperceptible. Ongoing: 5ms over 10,000 iterations. With a single average iteration= .5 microseconds.. About the same speed.
+Also check out:
+
+https://bitbucket.org/merarischroeder/number-range-with-no-bias/src
+https://stackoverflow.com/a/45118325/887092
+These links are another approach. Buffering could be added to this new code base, but most important was exploring different approaches to removing bias, and benchmarking the speeds and pros/cons.
+
+Share
+Improve this answer
+Follow
+edited Nov 30, 2018 at 3:25
+Kind Contributor's user avatar
+Kind Contributor
+18.7k66 gold badges5656 silver badges7272 bronze badges
+answered Oct 5, 2009 at 6:22
+Merari Schroeder's user avatar
+Merari Schroeder
+6111 bronze badge
+I found some slight performance enhancements to your method, which seemed the fasted of the bunch -- stackoverflow.com/a/17092645/1037948 – 
+drzaus
+ CommentedJun 13, 2013 at 16:46
+5
+1) Why all those magic constants? You specified the output length three times. Just define it as a constant or a parameter. You can use charSet.Length instead of 62. 2) A static Random without locking means this code is not threadsafe. 3) reducing 0-255 mod 62 introduces a detectable bias. 4) You can't use ToString on a char array, that always returns "System.Char[]". You need to use new String(rName) instead. – 
+CodesInChaos
+ CommentedJun 4, 2014 at 10:04 
+Thanks @CodesInChaos, I never thought of those things back then. Still only using Random class, but this should be better. I couldn't think of any better way to detect and correct bias inputs. – 
+Kind Contributor
+ CommentedFeb 20, 2016 at 9:44
+It's a bit silly to start with a weak RNG (System.Random) and then carefully avoiding any bias in your own code. The expression "polishing a turd" comes to mind. – 
+CodesInChaos
+ CommentedFeb 20, 2016 at 11:03 
+@CodesInChaos And now the apprentice has surpassed his master – 
+Kind Contributor
+ CommentedFeb 20, 2016 at 12:02
+Show 5 more comments
+5
+
+Try to combine two parts: unique (sequence, counter or date ) and random
+
+public class RandomStringGenerator
+{
+    public static string Gen()
+    {
+        return ConvertToBase(DateTime.UtcNow.ToFileTimeUtc()) + GenRandomStrings(5); //keep length fixed at least of one part
+    }
+
+    private static string GenRandomStrings(int strLen)
+    {
+        var result = string.Empty;
+
+        using (var gen = new RNGCryptoServiceProvider())
+        {
+            var data = new byte[1];
+
+            while (result.Length < strLen)
+            {
+                gen.GetNonZeroBytes(data);
+                int code = data[0];
+                if (code > 48 && code < 57 || // 0-9
+                    code > 65 && code < 90 || // A-Z
+                    code > 97 && code < 122   // a-z
+                )
+                {
+                    result += Convert.ToChar(code);
+                }
+            }
+
+            return result;
+        }
+    }
+
+    private static string ConvertToBase(long num, int nbase = 36)
+    {
+        const string chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //if you wish to make the algorithm more secure - change order of letter here
+
+        // check if we can convert to another base
+        if (nbase < 2 || nbase > chars.Length)
+            return null;
+
+        int r;
+        var newNumber = string.Empty;
+
+        // in r we have the offset of the char that was converted to the new base
+        while (num >= nbase)
+        {
+            r = (int)(num % nbase);
+            newNumber = chars[r] + newNumber;
+            num = num / nbase;
+        }
+        // the last number to convert
+        newNumber = chars[(int)num] + newNumber;
+
+        return newNumber;
+    }
+}
+Tests:
+
+    [Test]
+    public void Generator_Should_BeUnigue1()
+    {
+        //Given
+        var loop = Enumerable.Range(0, 1000);
+        //When
+        var str = loop.Select(x=> RandomStringGenerator.Gen());
+        //Then
+        var distinct = str.Distinct();
+        Assert.AreEqual(loop.Count(),distinct.Count()); // Or Assert.IsTrue(distinct.Count() < 0.95 * loop.Count())
+    }
+Share
+Improve this answer
+Follow
+edited Aug 1, 2020 at 9:17
+Mohsen Esmailpour's user avatar
+Mohsen Esmailpour
+11.6k33 gold badges4949 silver badges7070 bronze badges
+answered Jan 1, 2015 at 19:08
+RouR's user avatar
+RouR
+6,33633 gold badges3535 silver badges2525 bronze badges
+1) You can use character literals instead of the ASCII values associated with those characters. 2) You have an off-by-one mistake in your interval matching code. You need to use <= and >= instead of < and >. 3) I'd add the unnecessary parentheses around the && expressions to make it clear they have precedence, but of course that's only a stylistic choice. – 
+CodesInChaos
+ CommentedOct 24, 2016 at 16:58
++ 1 Good for removing bias and adding testing. I'm not sure why you prepend your random string with a timestamp-derived string though? Also, you still need to dispose your RNGCryptoServiceProvider – 
+monty
+ CommentedJun 7, 2018 at 22:11
+Add a comment
+5
+
+A simple and highly secure way might be generating the cryptography Aes key.
+
+public static string GenerateRandomString()
+{
+    using Aes crypto = Aes.Create();
+    crypto.GenerateKey();
+    return Convert.ToBase64String(crypto.Key);
+}
+Share
+Improve this answer
+Follow
+answered Dec 19, 2021 at 20:30
+Misha Zaslavsky's user avatar
+Misha Zaslavsky
+9,8301212 gold badges8282 silver badges125125 bronze badges
+Add a comment
+5
+
+A solution that includes all alphabet characters and numbers which you can change as you wish:
+
+public static string RandomString(int length)
+{
+    Random rand = new Random();
+    string charbase = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+    return new string(Enumerable.Range(0,length)
+           .Select(_ => charbase[rand.Next(charbase.Length)])
+           .ToArray());
+}
+If you like one-liner methods ;)
+
+public static Random rand = new Random();
+public const string charbase = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+ 
+
+public static string RandomString(int length) =>
+        new string(Enumerable.Range(0,length).Select(_ => charbase[rand.Next(charbase.Length)]).ToArray());
+Share
+Improve this answer
+Follow
+answered Oct 7, 2022 at 18:11
+YazanGhafir's user avatar
+YazanGhafir
+9641010 silver badges1010 bronze badges
+Add a comment
+5
+
+With .NET 8+ you can use Random.GetItems and string.Create
+
+private const string Charset = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+public static string GenerateRandomString(int length)
+{
+    return string.Create<object?>(length, null,
+        static (chars, _) => Random.Shared.GetItems(Charset, chars));
+}
+It's more concise and performant than the accepted answer.
+
+Method	Mean	Error	StdDev	Gen0	Allocated
+NewString	93.70 ns	1.896 ns	3.062 ns	0.0280	176 B
+StringCreate	31.66 ns	0.651 ns	0.609 ns	0.0063	40 B
+If you need a cryptographically strong random, use RandomNumberGenerator.GetString.
+
+Share
+Improve this answer
+Follow
+edited Feb 21 at 14:32
+answered Jan 4, 2024 at 20:41
+Greg's user avatar
+Greg
+1,04422 gold badges1414 silver badges2828 bronze badges
+Add a comment
+4
+
+I was looking for a more specific answer, where I want to control the format of the random string and came across this post. For example: license plates (of cars) have a specific format (per country) and I wanted to created random license plates.
+I decided to write my own extension method of Random for this. (this is in order to reuse the same Random object, as you could have doubles in multi-threading scenarios). I created a gist (https://gist.github.com/SamVanhoutte/808845ca78b9c041e928), but will also copy the extension class here:
+
+void Main()
+{
+    Random rnd = new Random();
+    rnd.GetString("1-###-000").Dump();
+}
+
+public static class RandomExtensions
+{
+    public static string GetString(this Random random, string format)
+    {
+        // Based on http://stackoverflow.com/questions/1344221/how-can-i-generate-random-alphanumeric-strings-in-c
+        // Added logic to specify the format of the random string (# will be random string, 0 will be random numeric, other characters remain)
+        StringBuilder result = new StringBuilder();
+        for(int formatIndex = 0; formatIndex < format.Length ; formatIndex++)
+        {
+            switch(format.ToUpper()[formatIndex])
+            {
+                case '0': result.Append(getRandomNumeric(random)); break;
+                case '#': result.Append(getRandomCharacter(random)); break;
+                default : result.Append(format[formatIndex]); break;
+            }
+        }
+        return result.ToString();
+    }
+
+    private static char getRandomCharacter(Random random)
+    {
+        string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        return chars[random.Next(chars.Length)];
+    }
+
+    private static char getRandomNumeric(Random random)
+    {
+        string nums = "0123456789";
+        return nums[random.Next(nums.Length)];
+    }
+}
+Share
+Improve this answer
+Follow
+answered Jan 22, 2015 at 10:39
+Sam Vanhoutte's user avatar
+Sam Vanhoutte
+3,48111 gold badge3939 silver badges6161 bronze badges
+Add a comment
+4
+
+Now in one-liner flavour.
+
+private string RandomName()
+{
+        return new string(
+            Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 13)
+                .Select(s =>
+                {
+                    var cryptoResult = new byte[4];
+                    using (var cryptoProvider = new RNGCryptoServiceProvider())
+                        cryptoProvider.GetBytes(cryptoResult);
+
+                    return s[new Random(BitConverter.ToInt32(cryptoResult, 0)).Next(s.Length)];
+                })
+                .ToArray());
+}
+Share
+Improve this answer
+Follow
+edited Apr 17, 2020 at 7:44
+answered Jan 22, 2015 at 12:03
+Matas Vaitkevicius's user avatar
+Matas Vaitkevicius
+61.8k3737 gold badges250250 silver badges278278 bronze badges
+3
+Using a property for something that changes on every access is rather dubious. I'd recommend using a method instead. – 
+CodesInChaos
+ CommentedJan 11, 2016 at 16:34
+2
+RNGCryptoServiceProvider should be disposed after use. – 
+Tsahi Asher
+ CommentedJan 10, 2017 at 16:25
+I fixed the IDisposable issue, but this is still highly dubious, creating a new RNGCryptoServiceProvider for each letter. – 
+piojo
+ CommentedNov 7, 2018 at 6:58
+Add a comment
+4
+
+For both crypto & noncrypto, efficiently:
+
+public static string GenerateRandomString(int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") =>
+    new Random().GenerateRandomString(length, charset);
+
+public static string GenerateRandomString(this Random random, int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") =>
+    RandomString(random.NextBytes, length, charset.ToCharArray());
+
+public static string GenerateRandomCryptoString(int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+{
+    using (var crypto = new System.Security.Cryptography.RNGCryptoServiceProvider())
+        return crypto.GenerateRandomCryptoString(length, charset);
+}
+
+public static string GenerateRandomCryptoString(this RNGCryptoServiceProvider random, int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") => 
+    RandomString(random.GetBytes, length, charset.ToCharArray());
+
+private static string RandomString(Action<byte[]> fillRandomBuffer, int length, char[] charset)
+{
+    if (length < 0)
+        throw new ArgumentOutOfRangeException(nameof(length), $"{nameof(length)} must be greater or equal to 0");
+    if (charset is null)
+        throw new ArgumentNullException(nameof(charset));
+    if (charset.Length == 0)
+        throw new ArgumentException($"{nameof(charset)} must contain at least 1 character", nameof(charset));
+
+    var maxIdx = charset.Length;
+    var chars = new char[length];
+    var randomBuffer = new byte[length * 4];
+    fillRandomBuffer(randomBuffer);
+
+    for (var i = 0; i < length; i++)
+        chars[i] = charset[BitConverter.ToUInt32(randomBuffer, i * 4) % maxIdx];
+
+    return new string(chars);
+}
+Using generators & LINQ. Not the fastest option (especially because it doesn't generate all the bytes in one go) but pretty neat & extensible:
+
+private static readonly Random _random = new Random();
+
+public static string GenerateRandomString(int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") =>
+    new string(_random.GetGenerator().RandomChars(charset.ToCharArray()).Take(length).ToArray());
+
+public static string GenerateRandomCryptoString(int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890")
+{
+    using (var crypto = new System.Security.Cryptography.RNGCryptoServiceProvider())
+        return new string(crypto.GetGenerator().RandomChars(charset.ToCharArray()).Take(length).ToArray());
+}
+
+public static IEnumerable<char> RandomChars(this Func<uint, IEnumerable<uint>> randomGenerator, char[] charset)
+{
+    if (charset is null)
+        throw new ArgumentNullException(nameof(charset));
+    if (charset.Length == 0)
+        throw new ArgumentException($"{nameof(charset)} must contain at least 1 character", nameof(charset));
+
+    return randomGenerator((uint)charset.Length).Select(r => charset[r]);
+}
+
+public static Func<uint, IEnumerable<uint>> GetGenerator(this Random random)
+{
+    if (random is null)
+        throw new ArgumentNullException(nameof(random));
+
+    return GeneratorFunc_Inner;
+
+    IEnumerable<uint> GeneratorFunc_Inner(uint maxValue)
+    {
+        if (maxValue > int.MaxValue)
+            throw new ArgumentOutOfRangeException(nameof(maxValue));
+
+        return Generator_Inner();
+
+        IEnumerable<uint> Generator_Inner()
+        {
+            var randomBytes = new byte[4];
+            while (true)
+            {
+                random.NextBytes(randomBytes);
+                yield return BitConverter.ToUInt32(randomBytes, 0) % maxValue;
+            }
+        }
+    }
+}
+
+public static Func<uint, IEnumerable<uint>> GetGenerator(this System.Security.Cryptography.RNGCryptoServiceProvider random)
+{
+    if (random is null)
+        throw new ArgumentNullException(nameof(random));
+
+    return Generator_Inner;
+
+    IEnumerable<uint> Generator_Inner(uint maxValue)
+    {
+        var randomBytes = new byte[4];
+        while (true)
+        {
+            random.GetBytes(randomBytes);
+            yield return BitConverter.ToUInt32(randomBytes, 0) % maxValue;
+        }
+    }
+}
+a simpler version using LINQ for only non-crypto strings:
+
+private static readonly Random _random = new Random();
+
+public static string RandomString(int length, string charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890") =>
+    new string(_random.GenerateChars(charset).Take(length).ToArray()); 
+
+public static IEnumerable<char> GenerateChars(this Random random, string charset)
+{
+    if (charset is null) throw new ArgumentNullException(nameof(charset));
+    if (charset.Length == 0) throw new ArgumentException($"{nameof(charset)} must contain at least 1 character", nameof(charset));
+
+    return random.Generator(charset.Length).Select(r => charset[r]);
+}
+
+public static IEnumerable<int> Generator(this Random random, int maxValue)
+{
+    if (random is null) throw new ArgumentNullException(nameof(random));
+
+    return Generator_Inner();
+
+    IEnumerable<int> Generator_Inner() { while (true) yield return random.Next(maxValue); }
+}
+Share
+Improve this answer
+Follow
+edited Apr 19, 2021 at 0:58
+answered May 1, 2020 at 14:01
+Jake Walden's user avatar
+Jake Walden
+53266 silver badges55 bronze badges
+Add a comment
+3
+
+Horrible, I know, but I just couldn't help myself:
+
+
+namespace ConsoleApplication2
+{
+    using System;
+    using System.Text.RegularExpressions;
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Random adomRng = new Random();
+            string rndString = string.Empty;
+            char c;
+
+            for (int i = 0; i < 8; i++)
+            {
+                while (!Regex.IsMatch((c=Convert.ToChar(adomRng.Next(48,128))).ToString(), "[A-Za-z0-9]"));
+                rndString += c;
+            }
+
+            Console.WriteLine(rndString + Environment.NewLine);
+        }
+    }
+}
+
+Share
+Improve this answer
+Follow
+edited Aug 28, 2009 at 0:37
+answered Aug 28, 2009 at 0:26
+james's user avatar
+james
+83255 silver badges77 bronze badges
+Add a comment
+2
+
+I know this one is not the best way. But you can try this.
+
+string str = Path.GetRandomFileName(); //This method returns a random file name of 11 characters
+str = str.Replace(".","");
+Console.WriteLine("Random string: " + str);
+Share
+Improve this answer
+Follow
+answered Jul 15, 2014 at 12:42
+Sagar's user avatar
+Sagar
+7,66566 gold badges2323 silver badges3535 bronze badges
+2
+How is that one line? Console.WriteLine($"Random string: {Path.GetRandomFileName().Replace(".","")}"); is one line. – 
+PmanAce
+ CommentedMay 23, 2018 at 15:02
+Add a comment
+2
+
+A solution without using Random :
+
+var chars = Enumerable.Repeat("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", 8);
+
+var randomStr = new string(chars.SelectMany(str => str)
+                                .OrderBy(c => Guid.NewGuid())
+                                .Take(8).ToArray());
+Share
+Improve this answer
+Follow
+edited Aug 11, 2015 at 10:02
+answered Aug 11, 2015 at 9:42
+w.b's user avatar
+w.b
+11.2k55 gold badges3131 silver badges4949 bronze badges
+3
+NewGuid uses random internally. So this is still using random, it's just hiding it. – 
+Wedge
+ CommentedMay 27, 2016 at 16:50
+Add a comment
+2
+
+Here is a variant of Eric J's solution, i.e. cryptographically sound, for WinRT (Windows Store App):
+
+public static string GenerateRandomString(int length)
+{
+    var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    var result = new StringBuilder(length);
+    for (int i = 0; i < length; ++i)
+    {
+        result.Append(CryptographicBuffer.GenerateRandomNumber() % chars.Length);
+    }
+    return result.ToString();
+}
+If performance matters (especially when length is high):
+
+public static string GenerateRandomString(int length)
+{
+    var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    var result = new System.Text.StringBuilder(length);
+    var bytes = CryptographicBuffer.GenerateRandom((uint)length * 4).ToArray();
+    for (int i = 0; i < bytes.Length; i += 4)
+    {
+        result.Append(BitConverter.ToUInt32(bytes, i) % chars.Length);
+    }
+    return result.ToString();
+}
+Share
+Improve this answer
+Follow
+edited Oct 27, 2015 at 14:20
+answered Oct 26, 2015 at 14:46
+huyc's user avatar
+huyc
+35622 silver badges1010 bronze badges
+1
+This is not cryptographically sound. There is a small bias due to the modulus operation not spreading the entire width of ulong equally into 62 chars. – 
+Lie Ryan
+ CommentedMay 30, 2017 at 15:24
+Add a comment
+2
+
+A simple oneliner if all you need is a alphanumeric string with a max length of 32 (Guid length).
+
+public static string RandomGuidString(int length) => Guid.NewGuid().ToString("N").Substring(0, length);
+To make it safe, you could also put in a conditonal operator
+
+public static string RandomGuidString(int length) => Guid.NewGuid().ToString("N").Substring(0, length < 32 ? length : 32);
+Share
+Improve this answer
+Follow
+edited Jun 14, 2023 at 6:39
+answered Jun 13, 2023 at 12:50
+Hallgeir Engen's user avatar
+Hallgeir Engen
+9711010 silver badges1111 bronze badges
+Add a comment
+1
+2
+Next
+Protected question. To answer this question, you need to have at least 10 reputation on this site (not counting the association bonus). The reputation requirement helps protect this question from spam and non-answer activity.
+Start asking to get answers
+
+Find the answer to your question by asking.
+
+Explore related questions
+
+c#.netrandom
+See similar questions with these tags.
+
+The Overflow Blog
+Reliability for unreliable LLMs
+Programming problems that seem easy, but aren't, featuring Jon Skeet
+Featured on Meta
+Community Asks Sprint Announcement - June 2025
+Labs experiment launch: stackoverflow.ai
+2025 Community Moderator Election Results
+Linked
+26
+How to make random string of numbers and letters with a length of 5?
+1
+How to check if a string has at least 1 alphabetic character?
+1
+How to select 5 digit random in C# Array String?
+2
+How to generate ALPHANUMERIC Coupon Code in C#?
+2
+Random String generator with number of alpha and numeric chars C#
+0
+Methode random character in C#
+-4
+Generating Random string
+-1
+How can I generate Random strings which are saved into an array? c#
+293
+Generating Random Passwords
+445
+Simple insecure two-way data "obfuscation"?
+See more linked questions
+Related
+7
+How to generate Unique alphanumeric?
+4
+Generating unique, random alpha numeric strings
+0
+how to generate random number which is combination of letters as well as digit?
+4
+C# - What is the most efficient way to generate 10 character random alphanumeric string in?
+1
+Non-Repetitive Random Alphanumeric Code
+5
+Generate random alphanumeric string
+8
+Generate a random alphanumeric string
+0
+Random string generator C#
+3
+How can I generate a non-random number from a string in C#?
+2
+Random number generator with strings
+Hot Network Questions
+Disc brake rotors with larger bolt holes?
+Is birthright citizenship protected under the Fourteenth Amendment?
+Why is no work done in bringing a charge from the surface of a charged spherical conductor to the inside?
+A dystopia where you have to "sell" words when you need money
+Does this bread exist in real life?
+How to *locally* expose lua code in a .sty file
+What encryption scheme was used for the Columbia shuttle from-ground commands?
+Numbers 6:25 - Face?
+Can "Believer's Baptism" be found in the Early Church?
+What does describing YHWH as "fearful in praises" mean in Exodus 15:11, according to the original language?
+Geometry problem: square and golden ratio
+Is MDA based on the Datamaster video subsystem?
+What are these stone like things in the Avocado
+What is this cutting tool used for?
+How does the IBM 5150 PC test the DMA device?
+Can you replace several ethernet cables with a single fiber line?
+Pronunciation of "I'd just like" and "I just like"
+Explicit function for converting HUE to RGB
+Newton's original proof of the Newton-Girard identity
+Obtain CRS from Sentinel-2 imagery using rasterio
+What was the PE subsystem value of 8 (`IMAGE_SUBSYSTEM_NATIVE_WINDOWS`) used for?
+John 3:30 What does "I must decrease and he must increase" mean
+Analog story about using Hell as an energy source
+C# wait for a state change without blocking
+ Question feed
+
+
+
+
+
+Stack Overflow
+Questions
+Help
+Chat
+Products
+Teams
+Advertising
+Talent
+Company
+About
+Press
+Work Here
+Legal
+Privacy Policy
+Terms of Service
+Contact Us
+Cookie Settings
+Cookie Policy
+Stack Exchange Network
+Technology
+Culture & recreation
+Life & arts
+Science
+Professional
+Business
+API
+Data
+Blog
+Facebook
+Twitter
+LinkedIn
+Instagram
+Site design / logo © 2025 Stack Exchange Inc; user contributions licensed under CC BY-SA . rev 2025.6.30.30506
